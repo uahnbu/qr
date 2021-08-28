@@ -1,2 +1,3 @@
 # QR Code scanner
-https://uahnbu.github.io/qr
+**Host:** https://uahnbu.github.io/qr  
+**Main:** `./dist/index.html`
