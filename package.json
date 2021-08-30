@@ -1,13 +1,24 @@
 {
   "livelyReload": {
     "openBrowser": false,
-    "debug": true
+    "debug": true,
+    "sassOptions": {
+      "outdir": "dist/styles"
+    },
+    "typescriptOptions": {
+      "outdir": "dist/scripts"
+    }
+  },
+  "scripts": {
+    "generate-pwa-assets": "pwa-asset-generator dist/logo.png dist/images --background=#227 --favicon --mstile --manifest dist/manifest.json",
+    "inject-pwa-assets": "npm run generate-pwa-assets -- --index dist/index.html"
   },
   "dependencies": {
     "qr-scanner": "^1.3.0"
   },
   "devDependencies": {
     "file-loader": "^6.2.0",
+    "pwa-asset-generator": "^4.3.6",
     "webpack-cli": "^4.8.0"
   }
 }
