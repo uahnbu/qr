@@ -49,7 +49,7 @@
     <link rel="apple-touch-startup-image" href="images/apple-splash-1136-640.jpg" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
 </head>
   <body ondrop="handleFileDrop(event)" ondragover="event.preventDefault()" ondragenter="document.body.classList.add('dragover')" ondragleave="document.body.classList.remove('dragover')">
-    <div id="image-area">
+    <div id="first-area">
       <div id="image-box" onclick="triggerImageInput(event)">
         <div id="image-controls-box">
           <input hidden="" type="file" accept="image/*" onchange="handleImageInput(event)">
@@ -62,7 +62,7 @@
         <video></video>
       </div>
     </div>
-    <div id="result-area">
+    <div id="second-area">
       <div id="controls-area">
         <div id="controls-box">
           <input type="radio" id="controls-device" name="controls" checked="" hidden="">
@@ -84,6 +84,11 @@
           <span class="fas fa-copy"></span> <span id="copy-text">Copy</span>
         </button>
       </div>
+    </div>
+    <div id="hickey">
+      <span class="fas fa-code"></span>&nbsp;
+      <a id="author" href="https://github.com/uahnbu" target="_blank">Nguyên Tr.</a>
+      &nbsp;<span class="fas fa-heart"></span>
     </div>
     <div id="install-button" aria-label="Install on Homescreen" onclick="installApp()" hidden>
       <span class="fas fa-bookmark"></span>
@@ -112,5 +117,5 @@
         document.querySelector('#install-button').hidden = true;
       }
     </script>
-  
-</body></html>
+  </body>
+</html>
