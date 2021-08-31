@@ -174,11 +174,12 @@ function showError(err: string) {
 async function enableCameraByDefault() {
   const devices = await navigator.mediaDevices.enumerateDevices();
   const hasEnvironmenMode = devices.some(device => {
-    if (device.kind !== 'videoinput') return false;
+    if (device.kind !== 'videoinput') return;
     type VideoInputDeviceInfo = MediaDeviceInfo & {
-      getCapabilities(): MediaTrackCapabilities
+      getCapabilities?: () => MediaTrackCapabilities
     };
     const videoDevice = device as VideoInputDeviceInfo;
+    if (!videoDevice.getCapabilities) return;
     const facingModes = videoDevice.getCapabilities().facingMode;
     return facingModes.includes('environment');
   });
