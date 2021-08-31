@@ -12,22 +12,36 @@ const filesToCache = [
   'webfonts/fa-solid-900.woff2'
 ];
 
+// https://developers.google.com/web/fundamentals/primers/service-workers/lifecycle
 self.addEventListener('install', event => {
-  // console.log('Attempting to install service worker and cache static assets');
+  // console.log('Installing service worker', STATIC_CACHE_NAME);
+  // Prevent waiting for page navigation before activating v2
+  // self.skipWaiting();
   event.waitUntil(
     caches.open(STATIC_CACHE_NAME)
       .then(cache => cache.addAll(filesToCache))
   );
 });
 
+// Activate the SW. Only one SV can be active at a time.
+self.addEventListener('activate', event => {
+  // console.log('Activating service worker', STATIC_CACHE_NAME);
+  event.waitUntil(
+    caches.keys().then(cacheNames => Promise.all(
+      cacheNames.map(cacheName => {
+        if (cacheName !== STATIC_CACHE_NAME) {
+          return caches.delete(cacheName);
+        }
+      })
+    ))
+  );
+});
+
 self.addEventListener('fetch', event => {
-  // console.log('Fetch event for ', event.request.url);
+  console.log('Fetch event for', event.request.url);
   event.respondWith(
     caches.match(event.request).then(response => {
-      if (response) {
-        // console.log('Found', event.request.url, 'in cache');
-        return response;
-      }
+      if (response) return response;
       return fetch(event.request).then(response => {
         return caches.open(STATIC_CACHE_NAME).then(cache => {
           cache.put(event.request.url, response.clone());
@@ -35,20 +49,5 @@ self.addEventListener('fetch', event => {
         });
       });
     })
-  );
-});
-
-// Activate the SW
-self.addEventListener('activate', event => {
-  // console.log('Activating new service worker...');
-  const cacheAllowed = [STATIC_CACHE_NAME];
-  event.waitUntil(
-    caches.keys().then(cacheNames => Promise.all(
-      cacheNames.map(cacheName => {
-        if (cacheAllowed.indexOf(cacheName) === -1) {
-          return caches.delete(cacheName);
-        }
-      })
-    ))       
   );
 });

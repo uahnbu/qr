@@ -77,7 +77,6 @@ async function readImage(file) {
   return true;
 }
 
-new QCodeDecoder
 function readQRCode() {
   // Scan QR code using cirocosta library.
   QCodeDecoder().decodeFromImage(image, (err, result) => {
@@ -88,14 +87,14 @@ function readQRCode() {
 function disableCamera(switchMode?: boolean) {
   // clearInterval(streamTimer);
   // stream?.getVideoTracks()[0].stop();
-  type Video = { srcObject: MediaStream | null };
-  (video as Video).srcObject?.getTracks().forEach(track => track.stop());
-  video.srcObject = null;
   stream?.stop();
   stream = null;
   if (!switchMode) return;
   // video.pause();
   document.body.classList.remove('camera');
+  type Video = { srcObject: MediaStream | null };
+  (video as Video).srcObject?.getTracks().forEach(track => track.stop());
+  video.srcObject = null;
   video.hidden = true;
   controls.hidden = false;
 }
