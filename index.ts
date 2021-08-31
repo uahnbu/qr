@@ -15,7 +15,7 @@ function triggerImageInput(event: KeyboardEvent | MouseEvent & { code?: any }) {
 function switchToDevice({code}: KeyboardEvent) {
   if (code !== 'Enter' && code !== 'Space') return;
   document.querySelector<HTMLInputElement>('#controls-device').checked = true;
-  disableCamera(true);
+  disableCamera(true, true);
 }
 
 function switchToCamera({code}: KeyboardEvent) {
@@ -84,23 +84,26 @@ function readQRCode() {
   });
 }
 
-function disableCamera(switchMode?: boolean) {
+function disableCamera(willDetachVideo?: boolean, willHideVideo?: boolean) {
   // clearInterval(streamTimer);
   // stream?.getVideoTracks()[0].stop();
   stream?.stop();
   stream = null;
-  if (!switchMode) return;
-  // video.pause();
-  document.body.classList.remove('camera');
-  type Video = { srcObject: MediaStream | null };
-  (video as Video).srcObject?.getTracks().forEach(track => track.stop());
-  video.srcObject = null;
-  video.hidden = true;
-  controls.hidden = false;
+  if (willDetachVideo) {
+    // video.pause();
+    type Video = { srcObject: MediaStream | null };
+    (video as Video).srcObject?.getTracks().forEach(track => track.stop());
+    video.srcObject = null;
+  }
+  if (willHideVideo) {
+    document.body.classList.remove('camera');
+    video.hidden = true;
+    controls.hidden = false;
+  }
 }
 
 async function enableCamera() {
-  disableCamera();
+  disableCamera(true);
   document.body.classList.add('camera');
   image.hidden = controls.hidden = true;
   video.hidden = false;
@@ -166,4 +169,18 @@ function showError(err: string) {
   const redError = `<span class="error">${Error(err)}</span>`;
   const fixedError = `<div contenteditable=false>${redError}</div>`;
   resultBox.innerHTML = fixedError;
+}
+
+async function enableCameraByDefault() {
+  const devices = await navigator.mediaDevices.enumerateDevices();
+  const hasEnvironmenMode = devices.some(device => {
+    if (device.kind !== 'videoinput') return false;
+    type VideoInputDeviceInfo = MediaDeviceInfo & {
+      getCapabilities(): MediaTrackCapabilities
+    };
+    const videoDevice = device as VideoInputDeviceInfo;
+    const facingModes = videoDevice.getCapabilities().facingMode;
+    return facingModes.includes('environment');
+  });
+  hasEnvironmenMode && enableCamera();
 }
