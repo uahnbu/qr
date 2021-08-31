@@ -161,7 +161,7 @@ function enableCameraByDefault() {
             if (device.kind !== 'videoinput')
                 return;
             const videoDevice = device;
-            if (!videoDevice.getCapabilities)
+            if (!('getCapabilities' in videoDevice))
                 return;
             const facingModes = videoDevice.getCapabilities().facingMode;
             return facingModes.includes('environment');

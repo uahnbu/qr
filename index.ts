@@ -179,7 +179,7 @@ async function enableCameraByDefault() {
       getCapabilities?: () => MediaTrackCapabilities
     };
     const videoDevice = device as VideoInputDeviceInfo;
-    if (!videoDevice.getCapabilities) return;
+    if (!('getCapabilities' in videoDevice)) return;
     const facingModes = videoDevice.getCapabilities().facingMode;
     return facingModes.includes('environment');
   });
