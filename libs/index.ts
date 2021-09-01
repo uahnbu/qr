@@ -61,7 +61,7 @@ async function handleDataTransfer(data: HTMLInputElement | DataTransfer) {
     const text = data.getData('text/plain');
     if (!/^https?:\/\//.test(text)) return;
     showInfo(text);
-    await readCORSRequest(text);
+    if (!await readCORSRequest(text)) return;
     readQRCode();
   }
 }
@@ -74,34 +74,33 @@ async function readImage(file) {
   const reader = new FileReader();
   reader.readAsDataURL(file);
   await new Promise(resolve => reader.onloadend = resolve);
-  resultBox.scrollIntoView();
   image.src = reader.result as string;
-  image.hidden = false;
-  controls.hidden = true;
   return true;
 }
 
 async function readCORSRequest(url: string) {
-  var xhr = new XMLHttpRequest();
+  const xhr = new XMLHttpRequest();
   xhr.open('GET', CORS_API_URL + url);
   xhr.responseType = 'blob';
   xhr.send();
-  await new Promise(resolve => xhr.onload = resolve);
+  try {
+    await new Promise((resolve, reject) => {
+      xhr.onload = resolve;
+      xhr.onerror = () => reject('Cannot fetch URL using CORS proxy');
+    });
+    return await readImage(xhr.response);
+  } catch (err) { showError(err); return false }
 
-  const reader = new FileReader();
-  reader.readAsDataURL(xhr.response);
-  await new Promise(resolve => reader.onloadend = resolve);
-
-  image.src = reader.result as string;
-  await new Promise(resolve => image.onload = resolve);
-
-  const canvas = document.createElement('canvas');
-  canvas.width = image.width, canvas.height = image.height;
-  canvas.getContext('2d').drawImage(image, 0, 0, image.width, image.height);
-  image.src = canvas.toDataURL('image/png');
+  // const canvas = document.createElement('canvas');
+  // canvas.width = image.width, canvas.height = image.height;
+  // canvas.getContext('2d').drawImage(image, 0, 0, image.width, image.height);
+  // image.src = canvas.toDataURL('image/png');
 }
 
 async function readQRCode() {
+  resultBox.scrollIntoView();
+  image.hidden = false;
+  controls.hidden = true;
   try {
     // Scan QR code using nimiq library.
     showResult(await QrScanner.scanImage(image));
