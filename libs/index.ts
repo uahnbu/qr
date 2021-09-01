@@ -3,6 +3,8 @@ const video = document.querySelector<HTMLVideoElement>('#image-box video');
 const controls = document.querySelector<HTMLElement>('#image-controls-box');
 const resultBox = document.querySelector<HTMLElement>('#result-box');
 
+const CORS_API_URL = 'https://cors-anywhere-clone.herokuapp.com/';
+
 let stream: QrScanner;
 // let streamTimer = -1;
 
@@ -52,14 +54,16 @@ document.addEventListener('paste', event => {
 
 async function handleDataTransfer(data: HTMLInputElement | DataTransfer) {
   const file = data.files[0];
-  if (!file) return;
-  if (!await readImage(file)) return;
-  // readQRCode();
-
-  // Scan QR code using nimiq library.
-  QrScanner.scanImage(image)
-    .then(result => showResult(result))
-    .catch(() => readQRCode());
+  if (file) {
+    if (!await readImage(file)) return;
+    readQRCode();
+  } else if ('getData' in data) {
+    const text = data.getData('text/plain');
+    if (!/^https?:\/\//.test(text)) return;
+    showInfo(text);
+    await readCORSRequest(text);
+    readQRCode();
+  }
 }
 
 async function readImage(file) {
@@ -77,11 +81,36 @@ async function readImage(file) {
   return true;
 }
 
-function readQRCode() {
-  // Scan QR code using cirocosta library.
-  QCodeDecoder().decodeFromImage(image, (err, result) => {
-    err ? showError('No QR Code found') : showResult(result);
-  });
+async function readCORSRequest(url: string) {
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', CORS_API_URL + url);
+  xhr.responseType = 'blob';
+  xhr.send();
+  await new Promise(resolve => xhr.onload = resolve);
+
+  const reader = new FileReader();
+  reader.readAsDataURL(xhr.response);
+  await new Promise(resolve => reader.onloadend = resolve);
+
+  image.src = reader.result as string;
+  await new Promise(resolve => image.onload = resolve);
+
+  const canvas = document.createElement('canvas');
+  canvas.width = image.width, canvas.height = image.height;
+  canvas.getContext('2d').drawImage(image, 0, 0, image.width, image.height);
+  image.src = canvas.toDataURL('image/png');
+}
+
+async function readQRCode() {
+  try {
+    // Scan QR code using nimiq library.
+    showResult(await QrScanner.scanImage(image));
+  } catch {
+    // Scan QR code using cirocosta library.
+    QCodeDecoder().decodeFromImage(image, (err, result) => {
+      err ? showError('No QR Code found') : showResult(result);
+    });
+  }
 }
 
 function disableCamera(willDetachVideo?: boolean, willHideVideo?: boolean) {
@@ -155,11 +184,17 @@ async function enableCamera() {
 //   readQRCode();
 // }
 
+function showInfo(url: string) {
+  const link = `<a href="${url}" target="_blank">${url}</a>`;
+  const info = `<span class="info">Fetching image from "${link}"...</span>`;
+  resultBox.innerHTML = info;
+}
+
 function showResult(result: string) {
   if (/^https?:\/\//.test(result)) {
-    const url = `<a href=${result} target="_blank">${result}</a>`;
-    const fixedUrl = `<div contenteditable="false">${url}</div>`;
-    resultBox.innerHTML = fixedUrl;
+    const link = `<a href=${result} target="_blank">${result}</a>`;
+    const fixedLink = `<div contenteditable="false">${link}</div>`;
+    resultBox.innerHTML = fixedLink;
   } else resultBox.textContent = result;
   stream && (resultBox.scrollIntoView(), disableCamera());
 }
