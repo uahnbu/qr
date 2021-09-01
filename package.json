@@ -3,13 +3,14 @@
     "openBrowser": false,
     "debug": true,
     "sassOptions": {
-      "outdir": "dist/styles"
+      "outdir": "../dist/styles"
     },
     "typescriptOptions": {
-      "outdir": "dist/scripts"
+      "outdir": "../dist/scripts"
     }
   },
   "scripts": {
+    "webpack": "webpack",
     "generate-pwa-asset": "node pwa.js"
   },
   "dependencies": {

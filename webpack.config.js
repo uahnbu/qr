@@ -8,9 +8,9 @@ const path = require('path');
 module.exports = [
   {
     target: 'web',
-    entry: './app.js',
+    entry: './libs/qr-scanner.js',
     output: {
-      path: path.resolve(__dirname, 'dist'),
+      path: path.resolve(__dirname, 'dist/scripts'),
       filename: 'qr-scanner.min.js',
       libraryTarget: 'umd'
     }
