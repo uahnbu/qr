@@ -3,10 +3,10 @@
     "openBrowser": false,
     "debug": true,
     "sassOptions": {
-      "outdir": "../dist/styles"
+      "outdir": "dist/styles"
     },
     "typescriptOptions": {
-      "outdir": "../dist/scripts"
+      "outdir": "dist/scripts"
     }
   },
   "scripts": {
